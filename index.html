@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KukaFigyelő</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f2;
+            color: #1f2937;
+        }
+
+        header {
+            background: #238636;
+            color: white;
+            text-align: center;
+            padding: 28px 20px 32px;
+        }
+
+        header .logo {
+            font-size: 48px;
+        }
+
+        header h1 {
+            margin: 5px 0 5px;
+            font-size: 34px;
+        }
+
+        header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            margin: -20px auto 40px;
+            padding: 0 15px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 22px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.10);
+        }
+
+        .label {
+            color: #6b7280;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #when {
+            margin-top: 10px;
+            font-size: 42px;
+            font-weight: 800;
+            color: #238636;
+        }
+
+        #date {
+            margin-top: 8px;
+            color: #6b7280;
+            font-size: 17px;
+        }
+
+        .waste-box {
+            margin: 25px auto 0;
+            padding: 18px;
+            border-radius: 16px;
+            background: #f3f4f6;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .waste-icon {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .section-title {
+            margin: 30px 5px 12px;
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .pickup {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .pickup-date {
+            font-weight: bold;
+        }
+
+        .pickup-waste {
+            color: #4b5563;
+            text-align: right;
+            max-width: 55%;
+        }
+
+        button {
+            margin-top: 22px;
+            border: none;
+            background: #238636;
+            color: white;
+            padding: 13px 22px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b6f2c;
+        }
+
+        #status {
+            margin-top: 14px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 500px) {
+
+            header h1 {
+                font-size: 29px;
+            }
+
+            #when {
+                font-size: 36px;
+            }
+
+            .pickup {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .pickup-waste {
+                text-align: left;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🗑️</div>
+    <h1>KukaFigyelő</h1>
+    <p>Ne felejtsd el kivinni a kukát!</p>
+</header>
+
+<div class="container">
+
+    <div class="main-card">
+
+        <div class="label">Következő szállítás</div>
+
+        <div id="when">
+            Betöltés...
+        </div>
+
+        <div id="date">
+            Betöltés...
+        </div>
+
+        <div class="waste-box">
+            <span class="waste-icon">♻️</span>
+            <span id="nextWaste">Betöltés...</span>
+        </div>
+
+        <button onclick="loadData()">
+            🔄 Frissítés
+        </button>
+
+        <div id="status"></div>
+
+    </div>
+
+    <div class="section-title">
+        📅 Következő időpontok
+    </div>
+
+    <div id="upcoming">
+        Betöltés...
+    </div>
+
+</div>
+
+
+<script>
+
+const SHEET_ID = "1cHInXFifwPJbT5FX3nLPRJZ8rEwbyqVJ";
+
+const SHEET_URL =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+
+
+async function loadData() {
+
+    try {
+
+        document.getElementById("status").textContent =
+            "Adatok frissítése...";
+
+        const response = await fetch(SHEET_URL);
+
+        if (!response.ok) {
+            throw new Error("Nem sikerült betölteni a táblázatot.");
+        }
+
+        const csv = await response.text();
+
+        const rows = csv
+            .trim()
+            .split("\n")
+            .slice(1);
+
+        const today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+
+        let pickups = [];
+
+        for (const row of rows) {
+
+            const columns = row.split(",");
+
+            if (columns.length < 2) continue;
+
+            const dateText =
+                columns[0].replace(/"/g, "").trim();
+
+            const waste =
+                columns
+                    .slice(1)
+                    .join(",")
+                    .replace(/"/g, "")
+                    .trim();
+
+            const parts = dateText.split("-");
+
+            if (parts.length !== 3) continue;
+
+            const date = new Date(
+                Number(parts[0]),
+                Number(parts[1]) - 1,
+                Number(parts[2])
+            );
+
+            if (date >= today) {
+
+                pickups.push({
+                    date: date,
+                    waste: waste
+                });
+
+            }
+
+        }
+
+        pickups.sort((a, b) => a.date - b.date);
+
+        if (pickups.length === 0) {
+
+            document.getElementById("when").textContent =
+                "Nincs adat";
+
+            document.getElementById("date").textContent =
+                "";
+
+            document.getElementById("nextWaste").textContent =
+                "";
+
+            document.getElementById("upcoming").textContent =
+                "Nincs további szállítás.";
+
+            return;
+        }
+
+
+        const next = pickups[0];
+
+        const todayTime = today.getTime();
+        const nextTime = next.date.getTime();
+
+        const difference =
+            Math.round(
+                (nextTime - todayTime) /
+                (1000 * 60 * 60 * 24)
+            );
+
+
+        if (difference === 0) {
+
+            document.getElementById("when").textContent =
+                "MA";
+
+        } else if (difference === 1) {
+
+            document.getElementById("when").textContent =
+                "HOLNAP";
+
+        } else {
+
+            document.getElementById("when").textContent =
+                difference + " nap múlva";
+
+        }
+
+
+        document.getElementById("date").textContent =
+            next.date.toLocaleDateString("hu-HU", {
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+
+
+        document.getElementById("nextWaste").textContent =
+            next.waste;
+
+
+        const upcoming =
+            document.getElementById("upcoming");
+
+        upcoming.innerHTML = "";
+
+
+        pickups.slice(0, 6).forEach((pickup) => {
+
+            const item =
+                document.createElement("div");
+
+            item.className = "pickup";
+
+            item.innerHTML = `
+                <div class="pickup-date">
+                    ${pickup.date.toLocaleDateString("hu-HU", {
+                        month: "long",
+                        day: "numeric"
+                    })}
+                </div>
+
+                <div class="pickup-waste">
+                    ${pickup.waste}
+                </div>
+            `;
+
+            upcoming.appendChild(item);
+
+        });
+
+
+        document.getElementById("status").textContent =
+            "✓ Adatok frissítve";
+
+    }
+
+    catch (error) {
+
+        document.getElementById("when").textContent =
+            "Hiba történt";
+
+        document.getElementById("nextWaste").textContent =
+            "";
+
+        document.getElementById("status").textContent =
+            error.message;
+
+    }
+
+}
+
+
+loadData();
+
+</script>
+
+</body>
+</html>
