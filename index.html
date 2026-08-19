@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>KukaFigyelő</title>
+    <title>KukaFigyelő – Karva</title>
 
     <style>
         * {
@@ -30,7 +30,7 @@
         }
 
         header h1 {
-            margin: 5px 0 5px;
+            margin: 5px 0 4px;
             font-size: 34px;
         }
 
@@ -38,6 +38,12 @@
             margin: 0;
             opacity: 0.9;
             font-size: 16px;
+        }
+
+        header .location {
+            margin-top: 6px;
+            font-size: 14px;
+            opacity: 0.8;
         }
 
         .container {
@@ -115,8 +121,7 @@
 
         .info-box {
             margin-top: 18px;
-            background: #fff;
-            border-left: 5px solid #238636;
+            background: white;
             border-radius: 16px;
             padding: 18px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
@@ -133,6 +138,10 @@
             color: #4b5563;
             line-height: 1.5;
             font-size: 15px;
+        }
+
+        .glass-box {
+            border-left: 5px solid #22c55e;
         }
 
         .section-title {
@@ -259,15 +268,24 @@
 
 <header>
     <div class="logo">🗑️</div>
+
     <h1>KukaFigyelő</h1>
+
     <p>Ne felejtsd el kivinni a kukát!</p>
+
+    <div class="location">
+        Karva · Kravany nad Dunajom
+    </div>
 </header>
+
 
 <div class="container">
 
     <div class="main-card">
 
-        <div class="label">Következő szállítás</div>
+        <div class="label">
+            Következő szállítás
+        </div>
 
         <div id="when">
             Betöltés...
@@ -277,9 +295,18 @@
             Betöltés...
         </div>
 
-        <div class="waste-box" id="nextWasteBox">
-            <span class="waste-icon" id="nextWasteIcon">♻️</span>
-            <span id="nextWaste">Betöltés...</span>
+        <div class="waste-box">
+
+            <span
+                class="waste-icon"
+                id="nextWasteIcon">
+                ♻️
+            </span>
+
+            <span id="nextWaste">
+                Betöltés...
+            </span>
+
         </div>
 
         <button onclick="loadData()">
@@ -289,6 +316,7 @@
         <div id="status"></div>
 
     </div>
+
 
     <div class="info-box">
 
@@ -305,11 +333,30 @@
     </div>
 
 
+    <div class="info-box glass-box">
+
+        <div class="info-title">
+            🟢 Üveggyűjtés
+        </div>
+
+        <div class="info-text">
+            Az üveg elszállítása a
+            <strong>községháza előtti konténerből</strong>
+            történik.
+            Az üveggyűjtés napján a konténer ott lesz
+            kihelyezve, ezért az üveget oda kell elvinni.
+        </div>
+
+    </div>
+
+
     <div class="section-title">
         ♻️ Hulladéktípusok
     </div>
 
-    <div id="wasteTypes" class="waste-types">
+    <div
+        id="wasteTypes"
+        class="waste-types">
         Betöltés...
     </div>
 
@@ -327,13 +374,12 @@
 
 <script>
 
-const SHEET_ID = "1cHInXFifwPJbT5FX3nLPRJZ8rEwbyqVJ";
+const SHEET_ID =
+    "1cHInXFifwPJbT5FX3nLPRJZ8rEwbyqVJ";
 
 const SHEET_URL =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
-
-/* Hulladéktípusok */
 
 const WASTE_TYPES = {
 
@@ -360,17 +406,19 @@ const WASTE_TYPES = {
 };
 
 
-/* CSV sor feldolgozása */
-
 function parseCSVLine(line) {
 
     const result = [];
+
     let current = "";
+
     let insideQuotes = false;
+
 
     for (let i = 0; i < line.length; i++) {
 
         const char = line[i];
+
 
         if (char === '"') {
 
@@ -380,11 +428,13 @@ function parseCSVLine(line) {
             ) {
 
                 current += '"';
+
                 i++;
 
             } else {
 
-                insideQuotes = !insideQuotes;
+                insideQuotes =
+                    !insideQuotes;
 
             }
 
@@ -394,6 +444,7 @@ function parseCSVLine(line) {
         ) {
 
             result.push(current);
+
             current = "";
 
         } else {
@@ -404,6 +455,7 @@ function parseCSVLine(line) {
 
     }
 
+
     result.push(current);
 
     return result;
@@ -411,13 +463,14 @@ function parseCSVLine(line) {
 }
 
 
-/* Hulladéktípusok felismerése */
-
 function getWasteTypes(waste) {
 
     const found = [];
 
-    for (const type of Object.keys(WASTE_TYPES)) {
+
+    for (
+        const type of Object.keys(WASTE_TYPES)
+    ) {
 
         if (waste.includes(type)) {
 
@@ -427,12 +480,11 @@ function getWasteTypes(waste) {
 
     }
 
+
     return found;
 
 }
 
-
-/* Napok számának szövege */
 
 function getDayText(difference) {
 
@@ -449,13 +501,12 @@ function getDayText(difference) {
 }
 
 
-/* Adatok betöltése */
-
 async function loadData() {
 
     try {
 
-        document.getElementById("status").textContent =
+        document.getElementById("status")
+            .textContent =
             "Adatok frissítése...";
 
 
@@ -562,27 +613,28 @@ async function loadData() {
 
         if (futurePickups.length === 0) {
 
-            document.getElementById("when").textContent =
+            document.getElementById("when")
+                .textContent =
                 "Nincs adat";
 
-            document.getElementById("date").textContent =
-                "";
+            document.getElementById("date")
+                .textContent = "";
 
-            document.getElementById("nextWaste").textContent =
-                "";
+            document.getElementById("nextWaste")
+                .textContent = "";
 
-            document.getElementById("upcoming").textContent =
+            document.getElementById("upcoming")
+                .textContent =
                 "Nincs további szállítás.";
 
-            document.getElementById("wasteTypes").textContent =
+            document.getElementById("wasteTypes")
+                .textContent =
                 "Nincs további szállítás.";
 
             return;
 
         }
 
-
-        /* Következő szállítás */
 
         const next =
             futurePickups[0];
@@ -598,11 +650,13 @@ async function loadData() {
             );
 
 
-        document.getElementById("when").textContent =
+        document.getElementById("when")
+            .textContent =
             getDayText(difference);
 
 
-        document.getElementById("date").textContent =
+        document.getElementById("date")
+            .textContent =
             next.date.toLocaleDateString(
                 "hu-HU",
                 {
@@ -617,43 +671,50 @@ async function loadData() {
             getWasteTypes(next.waste);
 
 
-        document.getElementById("nextWaste").textContent =
+        document.getElementById("nextWaste")
+            .textContent =
             next.waste;
 
 
         if (nextTypes.length > 0) {
 
-            document.getElementById("nextWasteIcon").textContent =
-                nextTypes.map(
-                    type =>
-                        WASTE_TYPES[type].icon
-                ).join(" ");
+            document.getElementById(
+                "nextWasteIcon"
+            ).textContent =
+                nextTypes
+                    .map(
+                        type =>
+                            WASTE_TYPES[type].icon
+                    )
+                    .join(" ");
 
         }
 
 
-        /* Hulladéktípusok blokk */
-
         const wasteTypesContainer =
-            document.getElementById("wasteTypes");
+            document.getElementById(
+                "wasteTypes"
+            );
 
 
         wasteTypesContainer.innerHTML = "";
 
 
-        for (const type of Object.keys(WASTE_TYPES)) {
+        for (
+            const type of Object.keys(WASTE_TYPES)
+        ) {
 
             const nextForType =
                 futurePickups.find(
                     pickup =>
-                        getWasteTypes(pickup.waste)
-                            .includes(type)
+                        getWasteTypes(
+                            pickup.waste
+                        ).includes(type)
                 );
 
 
             const item =
                 document.createElement("div");
-
 
             item.className =
                 "waste-type";
@@ -707,15 +768,18 @@ async function loadData() {
 
 
                 nextText.textContent =
-                    getDayText(typeDifference) +
+                    getDayText(
+                        typeDifference
+                    ) +
                     " • " +
-                    nextForType.date.toLocaleDateString(
-                        "hu-HU",
-                        {
-                            month: "long",
-                            day: "numeric"
-                        }
-                    );
+                    nextForType.date
+                        .toLocaleDateString(
+                            "hu-HU",
+                            {
+                                month: "long",
+                                day: "numeric"
+                            }
+                        );
 
             } else {
 
@@ -731,15 +795,16 @@ async function loadData() {
             item.appendChild(icon);
             item.appendChild(content);
 
-            wasteTypesContainer.appendChild(item);
+            wasteTypesContainer
+                .appendChild(item);
 
         }
 
 
-        /* Teljes idei lista */
-
         const upcoming =
-            document.getElementById("upcoming");
+            document.getElementById(
+                "upcoming"
+            );
 
 
         upcoming.innerHTML = "";
@@ -770,14 +835,15 @@ async function loadData() {
                     "pickup-date";
 
                 date.textContent =
-                    pickup.date.toLocaleDateString(
-                        "hu-HU",
-                        {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric"
-                        }
-                    );
+                    pickup.date
+                        .toLocaleDateString(
+                            "hu-HU",
+                            {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric"
+                            }
+                        );
 
 
                 const waste =
@@ -788,7 +854,9 @@ async function loadData() {
 
 
                 const types =
-                    getWasteTypes(pickup.waste);
+                    getWasteTypes(
+                        pickup.waste
+                    );
 
 
                 if (types.length > 0) {
@@ -797,13 +865,16 @@ async function loadData() {
                         type => {
 
                             const tag =
-                                document.createElement("span");
+                                document.createElement(
+                                    "span"
+                                );
 
                             tag.className =
                                 "waste-tag";
 
                             tag.textContent =
-                                WASTE_TYPES[type].icon +
+                                WASTE_TYPES[type]
+                                    .icon +
                                 " " +
                                 type;
 
@@ -829,8 +900,6 @@ async function loadData() {
         );
 
 
-        /* Frissítés időpontja */
-
         const now =
             new Date();
 
@@ -854,24 +923,24 @@ async function loadData() {
             );
 
 
-        document.getElementById("status").textContent =
+        document.getElementById("status")
+            .textContent =
             "✓ Frissítve: " +
             updateTime;
-
 
     }
 
     catch (error) {
 
-        document.getElementById("when").textContent =
+        document.getElementById("when")
+            .textContent =
             "Hiba történt";
 
+        document.getElementById("nextWaste")
+            .textContent = "";
 
-        document.getElementById("nextWaste").textContent =
-            "";
-
-
-        document.getElementById("status").textContent =
+        document.getElementById("status")
+            .textContent =
             error.message;
 
     }
