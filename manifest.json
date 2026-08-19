@@ -1,0 +1,17 @@
+{
+  "name": "KukaFigyelő – Karva",
+  "short_name": "KukaFigyelő",
+  "description": "Hulladékszállítási időpontok Karván – Kravany nad Dunajom.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f1f5f2",
+  "theme_color": "#238636",
+  "lang": "hu",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
