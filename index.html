@@ -91,10 +91,112 @@
             margin-bottom: 5px;
         }
 
+        button {
+            margin-top: 22px;
+            border: none;
+            background: #238636;
+            color: white;
+            padding: 13px 22px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1b6f2c;
+        }
+
+        #status {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .info-box {
+            margin-top: 18px;
+            background: #fff;
+            border-left: 5px solid #238636;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+            text-align: left;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            color: #4b5563;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
         .section-title {
             margin: 30px 5px 12px;
             font-size: 21px;
             font-weight: bold;
+        }
+
+        .waste-types {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .waste-type {
+            background: white;
+            border-radius: 16px;
+            padding: 15px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .type-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 25px;
+            flex-shrink: 0;
+        }
+
+        .type-content {
+            flex: 1;
+        }
+
+        .type-name {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .type-next {
+            margin-top: 4px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .black-icon {
+            background: #e5e7eb;
+        }
+
+        .yellow-icon {
+            background: #fef3c7;
+        }
+
+        .blue-icon {
+            background: #dbeafe;
+        }
+
+        .green-icon {
+            background: #dcfce7;
         }
 
         .pickup {
@@ -113,31 +215,20 @@
         }
 
         .pickup-waste {
-            color: #4b5563;
             text-align: right;
             max-width: 55%;
+            font-weight: 600;
         }
 
-        button {
-            margin-top: 22px;
-            border: none;
-            background: #238636;
-            color: white;
-            padding: 13px 22px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #1b6f2c;
-        }
-
-        #status {
-            margin-top: 14px;
+        .waste-tag {
+            display: inline-block;
+            margin: 3px 0 0 4px;
             font-size: 13px;
-            color: #9ca3af;
+            font-weight: 600;
+        }
+
+        .past {
+            opacity: 0.45;
         }
 
         @media (max-width: 500px) {
@@ -186,8 +277,8 @@
             Betöltés...
         </div>
 
-        <div class="waste-box">
-            <span class="waste-icon">♻️</span>
+        <div class="waste-box" id="nextWasteBox">
+            <span class="waste-icon" id="nextWasteIcon">♻️</span>
             <span id="nextWaste">Betöltés...</span>
         </div>
 
@@ -199,8 +290,32 @@
 
     </div>
 
+    <div class="info-box">
+
+        <div class="info-title">
+            📌 Fontos tudnivaló
+        </div>
+
+        <div class="info-text">
+            A hulladékot a szállítás napján legkésőbb
+            <strong>6:00-ig</strong> kell kihelyezni.
+            A gyűjtés az esti órákig is eltarthat.
+        </div>
+
+    </div>
+
+
     <div class="section-title">
-        📅 Következő időpontok
+        ♻️ Hulladéktípusok
+    </div>
+
+    <div id="wasteTypes" class="waste-types">
+        Betöltés...
+    </div>
+
+
+    <div class="section-title">
+        📅 Összes idei szállítás
     </div>
 
     <div id="upcoming">
@@ -218,6 +333,124 @@ const SHEET_URL =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
 
 
+/* Hulladéktípusok */
+
+const WASTE_TYPES = {
+
+    "Vegyes kommunális": {
+        icon: "⚫",
+        className: "black-icon"
+    },
+
+    "Műanyag, fém, italoskarton": {
+        icon: "🟡",
+        className: "yellow-icon"
+    },
+
+    "Papír": {
+        icon: "🔵",
+        className: "blue-icon"
+    },
+
+    "Üveg": {
+        icon: "🟢",
+        className: "green-icon"
+    }
+
+};
+
+
+/* CSV sor feldolgozása */
+
+function parseCSVLine(line) {
+
+    const result = [];
+    let current = "";
+    let insideQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+
+        const char = line[i];
+
+        if (char === '"') {
+
+            if (
+                insideQuotes &&
+                line[i + 1] === '"'
+            ) {
+
+                current += '"';
+                i++;
+
+            } else {
+
+                insideQuotes = !insideQuotes;
+
+            }
+
+        } else if (
+            char === "," &&
+            !insideQuotes
+        ) {
+
+            result.push(current);
+            current = "";
+
+        } else {
+
+            current += char;
+
+        }
+
+    }
+
+    result.push(current);
+
+    return result;
+
+}
+
+
+/* Hulladéktípusok felismerése */
+
+function getWasteTypes(waste) {
+
+    const found = [];
+
+    for (const type of Object.keys(WASTE_TYPES)) {
+
+        if (waste.includes(type)) {
+
+            found.push(type);
+
+        }
+
+    }
+
+    return found;
+
+}
+
+
+/* Napok számának szövege */
+
+function getDayText(difference) {
+
+    if (difference === 0) {
+        return "MA";
+    }
+
+    if (difference === 1) {
+        return "HOLNAP";
+    }
+
+    return difference + " nap múlva";
+
+}
+
+
+/* Adatok betöltése */
+
 async function loadData() {
 
     try {
@@ -225,33 +458,56 @@ async function loadData() {
         document.getElementById("status").textContent =
             "Adatok frissítése...";
 
-        const response = await fetch(SHEET_URL);
+
+        const response =
+            await fetch(SHEET_URL);
+
 
         if (!response.ok) {
-            throw new Error("Nem sikerült betölteni a táblázatot.");
+
+            throw new Error(
+                "Nem sikerült betölteni a táblázatot."
+            );
+
         }
 
-        const csv = await response.text();
 
-        const rows = csv
-            .trim()
-            .split("\n")
-            .slice(1);
+        const csv =
+            await response.text();
 
-        const today = new Date();
+
+        const rows =
+            csv
+                .trim()
+                .split(/\r?\n/)
+                .slice(1);
+
+
+        const today =
+            new Date();
 
         today.setHours(0, 0, 0, 0);
 
-        let pickups = [];
+
+        let allPickups = [];
+
 
         for (const row of rows) {
 
-            const columns = row.split(",");
+            const columns =
+                parseCSVLine(row);
 
-            if (columns.length < 2) continue;
+
+            if (columns.length < 2) {
+                continue;
+            }
+
 
             const dateText =
-                columns[0].replace(/"/g, "").trim();
+                columns[0]
+                    .replace(/"/g, "")
+                    .trim();
+
 
             const waste =
                 columns
@@ -260,30 +516,51 @@ async function loadData() {
                     .replace(/"/g, "")
                     .trim();
 
-            const parts = dateText.split("-");
 
-            if (parts.length !== 3) continue;
+            const parts =
+                dateText.split("-");
 
-            const date = new Date(
-                Number(parts[0]),
-                Number(parts[1]) - 1,
-                Number(parts[2])
-            );
 
-            if (date >= today) {
-
-                pickups.push({
-                    date: date,
-                    waste: waste
-                });
-
+            if (parts.length !== 3) {
+                continue;
             }
+
+
+            const date =
+                new Date(
+                    Number(parts[0]),
+                    Number(parts[1]) - 1,
+                    Number(parts[2])
+                );
+
+
+            if (isNaN(date.getTime())) {
+                continue;
+            }
+
+
+            allPickups.push({
+                date: date,
+                waste: waste
+            });
 
         }
 
-        pickups.sort((a, b) => a.date - b.date);
 
-        if (pickups.length === 0) {
+        allPickups.sort(
+            (a, b) =>
+                a.date - b.date
+        );
+
+
+        const futurePickups =
+            allPickups.filter(
+                pickup =>
+                    pickup.date >= today
+            );
+
+
+        if (futurePickups.length === 0) {
 
             document.getElementById("when").textContent =
                 "Nincs adat";
@@ -297,85 +574,290 @@ async function loadData() {
             document.getElementById("upcoming").textContent =
                 "Nincs további szállítás.";
 
+            document.getElementById("wasteTypes").textContent =
+                "Nincs további szállítás.";
+
             return;
+
         }
 
 
-        const next = pickups[0];
+        /* Következő szállítás */
 
-        const todayTime = today.getTime();
-        const nextTime = next.date.getTime();
+        const next =
+            futurePickups[0];
+
 
         const difference =
             Math.round(
-                (nextTime - todayTime) /
+                (
+                    next.date.getTime() -
+                    today.getTime()
+                ) /
                 (1000 * 60 * 60 * 24)
             );
 
 
-        if (difference === 0) {
-
-            document.getElementById("when").textContent =
-                "MA";
-
-        } else if (difference === 1) {
-
-            document.getElementById("when").textContent =
-                "HOLNAP";
-
-        } else {
-
-            document.getElementById("when").textContent =
-                difference + " nap múlva";
-
-        }
+        document.getElementById("when").textContent =
+            getDayText(difference);
 
 
         document.getElementById("date").textContent =
-            next.date.toLocaleDateString("hu-HU", {
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
+            next.date.toLocaleDateString(
+                "hu-HU",
+                {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric"
+                }
+            );
+
+
+        const nextTypes =
+            getWasteTypes(next.waste);
 
 
         document.getElementById("nextWaste").textContent =
             next.waste;
 
 
-        const upcoming =
-            document.getElementById("upcoming");
+        if (nextTypes.length > 0) {
 
-        upcoming.innerHTML = "";
+            document.getElementById("nextWasteIcon").textContent =
+                nextTypes.map(
+                    type =>
+                        WASTE_TYPES[type].icon
+                ).join(" ");
+
+        }
 
 
-        pickups.slice(0, 6).forEach((pickup) => {
+        /* Hulladéktípusok blokk */
+
+        const wasteTypesContainer =
+            document.getElementById("wasteTypes");
+
+
+        wasteTypesContainer.innerHTML = "";
+
+
+        for (const type of Object.keys(WASTE_TYPES)) {
+
+            const nextForType =
+                futurePickups.find(
+                    pickup =>
+                        getWasteTypes(pickup.waste)
+                            .includes(type)
+                );
+
 
             const item =
                 document.createElement("div");
 
-            item.className = "pickup";
 
-            item.innerHTML = `
-                <div class="pickup-date">
-                    ${pickup.date.toLocaleDateString("hu-HU", {
-                        month: "long",
-                        day: "numeric"
-                    })}
-                </div>
+            item.className =
+                "waste-type";
 
-                <div class="pickup-waste">
-                    ${pickup.waste}
-                </div>
-            `;
 
-            upcoming.appendChild(item);
+            const icon =
+                document.createElement("div");
 
-        });
+            icon.className =
+                "type-icon " +
+                WASTE_TYPES[type].className;
+
+            icon.textContent =
+                WASTE_TYPES[type].icon;
+
+
+            const content =
+                document.createElement("div");
+
+            content.className =
+                "type-content";
+
+
+            const name =
+                document.createElement("div");
+
+            name.className =
+                "type-name";
+
+            name.textContent =
+                type;
+
+
+            const nextText =
+                document.createElement("div");
+
+            nextText.className =
+                "type-next";
+
+
+            if (nextForType) {
+
+                const typeDifference =
+                    Math.round(
+                        (
+                            nextForType.date.getTime() -
+                            today.getTime()
+                        ) /
+                        (1000 * 60 * 60 * 24)
+                    );
+
+
+                nextText.textContent =
+                    getDayText(typeDifference) +
+                    " • " +
+                    nextForType.date.toLocaleDateString(
+                        "hu-HU",
+                        {
+                            month: "long",
+                            day: "numeric"
+                        }
+                    );
+
+            } else {
+
+                nextText.textContent =
+                    "Nincs további időpont.";
+
+            }
+
+
+            content.appendChild(name);
+            content.appendChild(nextText);
+
+            item.appendChild(icon);
+            item.appendChild(content);
+
+            wasteTypesContainer.appendChild(item);
+
+        }
+
+
+        /* Teljes idei lista */
+
+        const upcoming =
+            document.getElementById("upcoming");
+
+
+        upcoming.innerHTML = "";
+
+
+        allPickups.forEach(
+            pickup => {
+
+                const item =
+                    document.createElement("div");
+
+
+                item.className =
+                    "pickup";
+
+
+                if (pickup.date < today) {
+
+                    item.classList.add("past");
+
+                }
+
+
+                const date =
+                    document.createElement("div");
+
+                date.className =
+                    "pickup-date";
+
+                date.textContent =
+                    pickup.date.toLocaleDateString(
+                        "hu-HU",
+                        {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                        }
+                    );
+
+
+                const waste =
+                    document.createElement("div");
+
+                waste.className =
+                    "pickup-waste";
+
+
+                const types =
+                    getWasteTypes(pickup.waste);
+
+
+                if (types.length > 0) {
+
+                    types.forEach(
+                        type => {
+
+                            const tag =
+                                document.createElement("span");
+
+                            tag.className =
+                                "waste-tag";
+
+                            tag.textContent =
+                                WASTE_TYPES[type].icon +
+                                " " +
+                                type;
+
+                            waste.appendChild(tag);
+
+                        }
+                    );
+
+                } else {
+
+                    waste.textContent =
+                        pickup.waste;
+
+                }
+
+
+                item.appendChild(date);
+                item.appendChild(waste);
+
+                upcoming.appendChild(item);
+
+            }
+        );
+
+
+        /* Frissítés időpontja */
+
+        const now =
+            new Date();
+
+
+        const updateTime =
+            now.toLocaleDateString(
+                "hu-HU",
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                }
+            ) +
+            " " +
+            now.toLocaleTimeString(
+                "hu-HU",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
 
 
         document.getElementById("status").textContent =
-            "✓ Adatok frissítve";
+            "✓ Frissítve: " +
+            updateTime;
+
 
     }
 
@@ -384,8 +866,10 @@ async function loadData() {
         document.getElementById("when").textContent =
             "Hiba történt";
 
+
         document.getElementById("nextWaste").textContent =
             "";
+
 
         document.getElementById("status").textContent =
             error.message;
