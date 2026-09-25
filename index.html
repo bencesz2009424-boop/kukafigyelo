@@ -1436,7 +1436,10 @@ async function loadData() {
 
 
 updateCurrentDate();
-loadData();
+
+setTimeout(() => {
+    loadData();
+}, 300);
 
 </script>
 
