@@ -280,6 +280,11 @@
             transition:
                 transform 0.15s;
         }
+        .waste-type.next-type {
+    box-shadow:
+        inset 0 0 0 2px #238636,
+        0 4px 12px rgba(0, 0, 0, 0.055);
+}
 
         .waste-type:hover {
             transform: translateY(-1px);
@@ -359,6 +364,11 @@
             box-shadow:
                 0 3px 10px rgba(0, 0, 0, 0.055);
         }
+        .pickup.next-pickup {
+    box-shadow:
+        inset 0 0 0 2px #238636,
+        0 3px 10px rgba(0, 0, 0, 0.055);
+}
 
         .pickup-date {
             font-weight: bold;
@@ -593,7 +603,7 @@
 
     <br><br>
 
-    📅 Hulladéknaptár 2026 &nbsp;•&nbsp; 🆕 Verzió: v0.4
+    Hulladéknaptár 2026 &nbsp;•&nbsp; Verzió: v0.4.1
 
 </footer>
 
@@ -1047,6 +1057,12 @@ async function loadData() {
 
             item.className =
                 "waste-type";
+            if (
+    nextForType &&
+    nextForType.date.getTime() === next.date.getTime()
+) {
+    item.classList.add("next-type");
+}
 
 
             const icon =
@@ -1189,6 +1205,11 @@ async function loadData() {
 
                 item.className =
                     "pickup";
+                if (
+    pickup.date.getTime() === next.date.getTime()
+) {
+    item.classList.add("next-pickup");
+}
 
 
                 if (
