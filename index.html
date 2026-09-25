@@ -787,7 +787,7 @@ function getDayText(difference) {
     return difference + " nap múlva";
 
 }
-    function getWeekdayText(date) {
+   function getWeekdayText(date) {
 
     return date.toLocaleDateString(
         "hu-HU",
@@ -803,22 +803,26 @@ function updateCurrentDate() {
 
     const now = new Date();
 
-    document.getElementById("date")
-    .textContent =
-    next.date.toLocaleDateString(
-        "hu-HU",
-        {
-            year: "numeric",
-            month: "long",
-            day: "numeric"
-        }
-    )
-    +
-    " • "
-    +
-    getWeekdayText(next.date);
+    document.getElementById(
+        "current-date"
+    ).textContent =
 
-}    
+        now.toLocaleDateString(
+            "hu-HU",
+            {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            }
+        )
+
+        +
+        " "
+
+        +
+        getWeekdayText(now);
+
+}
 async function loadData() {
 
 
@@ -1003,23 +1007,23 @@ async function loadData() {
             getDayText(difference);
 
 
-        document.getElementById("date")
-            .textContent =
-            next.date.toLocaleDateString(
+       document.getElementById("date")
+    .textContent =
 
-                "hu-HU",
+    next.date.toLocaleDateString(
+        "hu-HU",
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    )
 
-                {
+    +
+    " "
 
-                    year: "numeric",
-
-                    month: "long",
-
-                    day: "numeric"
-
-                }
-
-            );
+    +
+    getWeekdayText(next.date);
 
 
         const nextTypes =
@@ -1172,7 +1176,6 @@ async function loadData() {
 
                 nextText.textContent =
 
-                 nextText.textContent =
 
     nextForType.date.toLocaleDateString(
         "hu-HU",
@@ -1411,28 +1414,30 @@ async function loadData() {
             updateTime;
 
 
-       } catch (error) {
+         } catch (error) {
 
-        console.error("Betöltési hiba:", error);
+        console.error(
+            "Betöltési hiba:",
+            error
+        );
 
-        document.getElementById("when")
-            .textContent =
-            "Újrapróbálkozás...";
+        document.getElementById(
+            "when"
+        ).textContent =
+            "Hiba történt";
 
-        document.getElementById("nextWaste")
-            .textContent = "";
+        document.getElementById(
+            "nextWaste"
+        ).textContent = "";
 
-        document.getElementById("status")
-            .textContent =
-            "Az adatok betöltése sikertelen, újrapróbálkozás...";
+        document.getElementById(
+            "status"
+        ).textContent =
+            error.message;
 
-        return false;
     }
 
-    return true;
-
 }
-
 
 async function initialLoad() {
 
@@ -1461,9 +1466,7 @@ async function initialLoad() {
 
 
 updateCurrentDate();
-initialLoad();
-
-</script>
+loadData();
 
 </script>
 
