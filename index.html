@@ -803,21 +803,20 @@ function updateCurrentDate() {
 
     const now = new Date();
 
-    document.getElementById(
-        "current-date"
-    ).textContent =
-        now.toLocaleDateString(
-            "hu-HU",
-            {
-                day: "numeric",
-                month: "long",
-                year: "numeric"
-            }
-        )
-        +
-        " "
-        +
-        getWeekdayText(now);
+    document.getElementById("date")
+    .textContent =
+    next.date.toLocaleDateString(
+        "hu-HU",
+        {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        }
+    )
+    +
+    " • "
+    +
+    getWeekdayText(next.date);
 
 }    
 async function loadData() {
@@ -1175,18 +1174,18 @@ async function loadData() {
 
                  nextText.textContent =
 
-    getWeekdayText(
-        nextForType.date
-    )
-    +
-    " • "
-    +
     nextForType.date.toLocaleDateString(
         "hu-HU",
         {
             month: "long",
             day: "numeric"
         }
+    )
+    +
+    " • "
+    +
+    getWeekdayText(
+        nextForType.date
     );
 
             } else {
