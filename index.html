@@ -67,6 +67,12 @@
 
             opacity: 1;
         }
+        header #current-date {
+    margin-top: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    opacity: 0.9;
+}
 
 
         /* ===== OLDAL ===== */
@@ -475,6 +481,7 @@
     <div class="location">
         Karva · Kravany nad Dunajom
     </div>
+    <div id="current-date"></div>
 
 </header>
 
@@ -603,7 +610,7 @@
 
     <br><br>
 
-    Hulladéknaptár 2026 &nbsp;•&nbsp; Verzió: v0.4.1
+    Hulladéknaptár 2026 &nbsp;•&nbsp; Verzió: v0.5
 
 </footer>
 
@@ -780,8 +787,39 @@ function getDayText(difference) {
     return difference + " nap múlva";
 
 }
+    function getWeekdayText(date) {
+
+    return date.toLocaleDateString(
+        "hu-HU",
+        {
+            weekday: "long"
+        }
+    );
+
+}
 
 
+function updateCurrentDate() {
+
+    const now = new Date();
+
+    document.getElementById(
+        "current-date"
+    ).textContent =
+        now.toLocaleDateString(
+            "hu-HU",
+            {
+                day: "numeric",
+                month: "long",
+                year: "numeric"
+            }
+        )
+        +
+        " "
+        +
+        getWeekdayText(now);
+
+}    
 async function loadData() {
 
 
@@ -1135,27 +1173,21 @@ async function loadData() {
 
                 nextText.textContent =
 
-                    getDayText(
-                        typeDifference
-                    )
+                 nextText.textContent =
 
-                    +
-                    " • "
-                    +
-                    nextForType.date
-                        .toLocaleDateString(
-
-                            "hu-HU",
-
-                            {
-
-                                month: "long",
-
-                                day: "numeric"
-
-                            }
-
-                        );
+    getWeekdayText(
+        nextForType.date
+    )
+    +
+    " • "
+    +
+    nextForType.date.toLocaleDateString(
+        "hu-HU",
+        {
+            month: "long",
+            day: "numeric"
+        }
+    );
 
             } else {
 
@@ -1404,6 +1436,7 @@ async function loadData() {
 }
 
 
+updateCurrentDate();
 loadData();
 
 </script>
