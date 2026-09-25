@@ -1411,33 +1411,59 @@ async function loadData() {
             updateTime;
 
 
-    } catch (error) {
+       } catch (error) {
 
+        console.error("Betöltési hiba:", error);
 
         document.getElementById("when")
             .textContent =
-            "Hiba történt";
-
+            "Újrapróbálkozás...";
 
         document.getElementById("nextWaste")
-            .textContent =
-            "";
-
+            .textContent = "";
 
         document.getElementById("status")
             .textContent =
-            error.message;
+            "Az adatok betöltése sikertelen, újrapróbálkozás...";
 
+        return false;
     }
+
+    return true;
+
+}
+
+
+async function initialLoad() {
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+
+        const success = await loadData();
+
+        if (success) {
+            return;
+        }
+
+        if (attempt < 3) {
+
+            await new Promise(resolve =>
+                setTimeout(resolve, 1000)
+            );
+
+        }
+    }
+
+    document.getElementById("status")
+        .textContent =
+        "Nem sikerült betölteni az adatokat. Nyomd meg a Frissítés gombot.";
 
 }
 
 
 updateCurrentDate();
+initialLoad();
 
-setTimeout(() => {
-    loadData();
-}, 300);
+</script>
 
 </script>
 
